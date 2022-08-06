@@ -1,0 +1,197 @@
+<html>
+  <head>
+    <title>Campo minato</title>
+  </head>
+  <style>
+    .singleCell
+    {
+      width: 9%;
+      border:1px solid blue;
+      display: inline-block;
+      *display: inline;
+      height: 80px;
+      background-color: gray;
+    }
+    #campoMinato
+    {
+      width: 70%;
+      margin-left: 15%;
+      text-align: center;
+      font-size: 30px;
+    }
+  </style>
+  <body>
+    <div id="campoMinato">
+    </div>
+  </body>
+  <script>
+    let max = 10;
+    let firstTime = true;
+    let Death = false;
+    let Matrix = Array(max).fill().map(()=>Array(max).fill(0));
+    let divCampoMinato = document.getElementById("campoMinato");
+    for(let i=0;i<max;i++)
+      for(let j=0;j<max;j++)
+        {
+          let divSingleCell = document.createElement("div");
+          divSingleCell.innerHTML="x";
+          divSingleCell.setAttribute("x",i);
+          divSingleCell.setAttribute("y",j);
+          divSingleCell.id="div-"+i+"-"+j;
+          divSingleCell.classList.add("singleCell");
+          divSingleCell.addEventListener("click",cellClick);
+          divCampoMinato.appendChild(divSingleCell);
+        }
+
+
+    function createMatrix(coordinate)
+    {
+      for(let i=0;i<10;i++)
+        {
+          let x;
+          let y;
+          do {
+            x = Math.floor(Math.random() * 10);
+            y = Math.floor(Math.random() * 10);
+          } while ((coordinate.x == x && coordinate.y ==y) || Matrix[x][y] == -1) ;
+
+          Matrix[x][y] = -1;
+        }
+      firstTime = false;
+    }
+
+    function clickElement(coordinate)
+    {
+      if(Matrix[coordinate.x][coordinate.y]==-1)
+      {
+        alert("Death");
+        Death = true;
+        displayMatrix();
+      }
+      else
+        {
+          let xInt = parseInt(coordinate.x);
+          let yInt = parseInt(coordinate.y);
+            Matrix[xInt][yInt]=1;
+            checkNeighbors(xInt,yInt);
+        }
+
+    }
+
+    function checkNeighbors(xInt,yInt)
+    {
+      let arrayToCheck = [{x: xInt,y: yInt}];
+
+      do {
+        let x = arrayToCheck[0].x;
+        let y = arrayToCheck[0].y;
+        arrayToCheck.shift();
+
+
+      if(calcBomb(x,y)==0)
+        for(let xV=-1;xV<2;xV++)
+          for(let yV=-1;yV<2;yV++)
+            if(x+xV>=0 && x+xV<max && y+yV>=0 && y+yV<max)
+            {
+              if(Matrix[x+xV][y+yV]==0)
+                arrayToCheck.push({x:x+xV,y:y+yV});
+              Matrix[x+xV][y+yV]=1;
+            }
+        console.log(arrayToCheck[0]);
+
+      } while (arrayToCheck.length>0);
+    }
+
+
+    function calcBomb(x,y)
+    {
+      let numberBomb=0;
+      for(let xV=-1;xV<2;xV++)
+        for(let yV=-1;yV<2;yV++)
+          if(x+xV>=0 && x+xV<max && y+yV>=0 && y+yV<max && Matrix[x+xV][y+yV]==-1)
+            numberBomb+=1;
+      return numberBomb;
+    }
+
+    function displayMatrix()
+    {
+      for(let x=0;x<max;x++)
+        for(let y=0;y<max;y++)
+          setValueAndColorOfSingleCell(x,y)
+
+    }
+
+    function setValueAndColorOfSingleCell(x,y)
+    {
+      if(Matrix[x][y]==1 || (Death && Matrix[x][y]!=-1))
+        {
+          numberBomb = calcBomb(x,y);
+          document.getElementById("div-"+x+"-"+y).innerHTML=numberBomb;
+          let color = "white";
+          switch (numberBomb) {
+            case 1:
+              color = "#fee";
+              break;
+            case 2:
+              color = "#fdd";
+              break;
+            case 3:
+              color = "#fbb";
+              break;
+            case 4:
+              color = "#f99";
+              break;
+            case 5:
+              color = "#f77";
+              break;
+            case 5:
+              color = "#f55";
+              break;
+            case 5:
+              color = "#f33";
+              break;
+
+            default:
+
+          }
+          document.getElementById("div-"+x+"-"+y).style.backgroundColor=color;
+        }
+      else
+        if(Death)
+        {
+            document.getElementById("div-"+x+"-"+y).style.backgroundColor="red";
+            document.getElementById("div-"+x+"-"+y).innerHTML=-1;
+        }
+        else
+          document.getElementById("div-"+x+"-"+y).innerHTML="X";
+
+    }
+
+
+    function checkWin()
+    {
+      for(let x=0;x<max;x++)
+        for(let y=0;y<max;y++)
+          if(Matrix[x][y]==0)
+            return false;
+
+      return true;
+    }
+
+
+
+    function cellClick()
+    {
+      let coordinate = {x: this.getAttribute("x"), y: this.getAttribute("y")};
+      //console.log(coordinate.x + "-" + coordinate.y);
+      if(firstTime)
+        createMatrix(coordinate);
+
+      clickElement(coordinate);
+      Win = checkWin();
+      if(Win)
+        alert("Win");
+      displayMatrix();
+    }
+  </script>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Flappy Cube</title>
+  </head>
+  <style media="screen">
+    #GameContainerFlappyCube
+    {
+      position: absolute;
+      top:30px;
+    }
+    #GameContainerFlappyCube canvas
+    {
+      position: absolute;
+      left: 30;
+      top: 30;
+      border:1px solid #000000;
+    }
+  </style>
+  <body>
+    <div id="GameContainerFlappyCube">
+      <canvas id="canvasBackground" width="300" height="900"></canvas>
+      <canvas id="canvasCube" width="300" height="900"></canvas>
+    </div>
+
+    <input type="button" onclick="startStopGame()" value="StartGame">
+
+    <script type="text/javascript">
+        let row = 60; //This is to have
+        let column = 3;//This is because we show only 2 row and then the next, so we don't need to much
+        let matrixBackground = Array(row).fill().map(()=>Array(column).fill(0));
+        let position = {y:30,x:0}; //y means the height, x is [0,infinite], but every 30 steps mean a canvas
+        let canvasDimension = {height:900,width:300};
+        let cubeDimension = {height:30,width:30};
+        let onDown=0;
+        let statusGame=0;
+        let firstTime=1;
+        let idTimer;
+        let nextStepCounter=0;
+        let tube = {max:60,min:0,spaceTube:7};
+        let backgroundCounter=0;
+
+        function oldPrintBackground()
+        {
+          var c = document.getElementById("canvasBackground");
+          var ctx = c.getContext("2d");
+          ctx.clearRect(0, 0, c.width, c.height);
+          let startPosition;
+          for(let rowCounter=0;rowCounter<row;rowCounter++)
+            for(let columCounter=0;columCounter<column;columCounter++)
+              if(matrixBackground[rowCounter][columCounter]==0)
+                {
+                  startPosition = canvasDimension.width * (1- position.x/30);
+                  startPosition += (canvasDimension.width+ canvasDimension.width/column)/2 * columCounter;
+                  ctx.beginPath();
+                  ctx.fillStyle = "blue";
+                  ctx.fillRect(startPosition+columCounter*(canvasDimension.width/column),rowCounter*(canvasDimension.height/row), canvasDimension.width/(column*2), canvasDimension.height/row);
+                  ctx.stroke();
+                }
+
+          ctx.font = '200px';
+          ctx.fillText(backgroundCounter, canvasDimension.width/2, canvasDimension.height/4);
+
+        }
+
+        function printBackground()
+        {
+          var c = document.getElementById("canvasBackground");
+          var ctx = c.getContext("2d");
+          ctx.clearRect(0, 0, c.width, c.height);
+          let startPosition;
+          for(let rowCounter=0;rowCounter<row;rowCounter++)
+            for(let columCounter=0;columCounter<column;columCounter++)
+              if(matrixBackground[rowCounter][columCounter]==0)
+                {
+                  startPosition = canvasDimension.width * (1- (position.x%90)/30);
+                  startPosition += (canvasDimension.width+ canvasDimension.width/column)/2 * columCounter;
+                  ctx.beginPath();
+                  ctx.fillStyle = "blue";
+                  ctx.fillRect(startPosition+columCounter*(canvasDimension.width/column),rowCounter*(canvasDimension.height/row), canvasDimension.width/(column*2), canvasDimension.height/row);
+                  ctx.stroke();
+                }
+
+          ctx.font = '200px';
+          ctx.fillText(backgroundCounter, canvasDimension.width/2, canvasDimension.height/4);
+
+        }
+
+        function printCube()
+        {
+          var c = document.getElementById("canvasCube");
+          var ctx = c.getContext("2d");
+          ctx.clearRect(0, 0, c.width, c.height);
+          ctx.beginPath();
+          ctx.fillStyle = "red";
+          ctx.fillRect((canvasDimension.width-cubeDimension.width)/2,((row-position.y)/2)*(canvasDimension.height/cubeDimension.height),cubeDimension.width,cubeDimension.height);
+          ctx.stroke();
+        }
+
+        function cubeUp()
+        {
+          position.y++;
+          onDown=0;
+          printCube();
+        }
+
+        document.getElementById("canvasCube").addEventListener('click',function(event){cubeUp();});
+
+        function startStopGame()
+        {
+          if(statusGame)
+          {
+            statusGame = false;
+            clearInterval(idTimer);
+          }
+          else
+          {
+            statusGame = true;
+            if(firstTime)
+            {
+              firstTime = false;
+              //newPiece();
+              setupTube();
+            }
+            idTimer = setInterval(move, 200);
+          }
+        }
+
+        function setupTube()
+        {
+          let positionTubeSetup = Math.floor(Math.random()*((tube.max-tube.spaceTube)-(tube.min+tube.spaceTube)+1)+tube.spaceTube);
+
+          for(let count=0;count<row;count++)
+            matrixBackground[count][backgroundCounter%3]=0;
+
+          for(let count=0;count<tube.spaceTube;count++)
+            matrixBackground[count+positionTubeSetup][backgroundCounter%3]=1;
+        }
+
+        function checkDeath()
+        {
+          let death=false;
+          let Ymin=position.y;
+          if(Ymin<1)
+          {
+              death=true;
+              Ymin=1;
+          }
+
+
+
+
+          let positionXtoCheck = (position.x+15)%30;
+          let columnToCheck = backgroundCounter%3;
+
+          /*
+          console.log(positionXtoCheck);
+          console.log(columnToCheck);*/
+
+          if(positionXtoCheck>28)
+            if(matrixBackground[60-Ymin][columnToCheck]==0)
+              death=true;
+
+          if(positionXtoCheck<7)
+            if(matrixBackground[60-Ymin][columnToCheck-1]==0)
+              death=true;
+
+          if(death)
+          {
+            alert("death");
+            console.log("death");
+            startStopGame();
+            //initAll();
+            printBackground();
+          }
+        }
+
+        function initAll()
+        {
+          matrixBackground = Array(row).fill().map(()=>Array(column).fill(0));
+          position = {y:30,x:0};
+          onDown=0;
+          statusGame=0;
+          firstTime=1;
+          idTimer;
+          nextStepCounter=0;
+          backgroundCounter=0;
+        }
+
+        function move()
+        {
+          position.y-=onDown;
+          if(position.y<0)
+            position.y=0;
+          onDown++;
+          if(onDown>5)
+            onDown=5;
+
+          checkDeath();
+          printCube();
+
+          nextStepCounter++;
+          if(nextStepCounter>3)
+          {
+            nextStepCounter=0;
+            position.x++;
+            if((position.x+15)%30==0)
+            {
+              backgroundCounter++;
+              setupTube();
+
+            }
+
+            printBackground();
+          }
+        }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title>Click Game Js</title>
+
+    <style>
+      .parentsInline
+      {
+        display: inline-block;
+      }
+      .childInline
+      {
+        float: left;
+        border:1px solid black;
+      }
+      #Money
+      {
+        width:100px;
+        height: 100%;
+      }
+      #allGame
+      {
+        width:100%;
+        height: 200px;
+        border:1px solid black;
+      }
+      .Costo::before
+      {
+          content: "Costo: ";
+      }
+      .Guadagno::before
+      {
+          content: "Guadagno: ";
+      }
+      .noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Edge, Opera and Firefox */
+}
+
+
+      .aiutante
+      {
+        border: 1px solid black;
+        padding:10px;
+        width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="allGame" class="parentsInline">
+      <div id="Money" class="childInline noselect"></div>
+      <div id="allAiutanti" class="parentsInline childInline noselect"></div>
+      <div class="childInline">Multiplicator <select id="multiplicator"></select>
+    </div>
+    <script type="text/javascript">
+          const infoAiutanti =
+          {
+            piccione:
+            {
+              costo:10,
+              guadagno:1,
+            },
+            lepri:
+            {
+              costo:100,
+              guadagno:5,
+            },
+            elefanti:
+            {
+              costo:10000,
+              guadagno:100,
+            }
+          }
+
+          const numberOfMultiplicator = [1,5,10,20,50,100,1000,10000];
+
+          class game
+          {
+
+            constructor()
+            {
+              console.log("Costructure");
+              this.ValueTotal = 0;
+              this.ClickObject = document.getElementById("Money");
+              this.setNumberAiutanti();
+              this.createAiutanti();
+              this.setClickMoney();
+              setInterval(this.lavoroDeiAiutanti.bind(this),1000);
+              this.buyMultipleSameTime = 1;
+              this.popolateMultiplicator();
+              this.AiutantiTotal = 0;
+            }
+
+            setNumberAiutanti()
+            {
+              this.numberAiutanti = {};
+              for (var key in infoAiutanti)
+               {
+                 this.numberAiutanti[key] = 0;
+               }
+            }
+
+            popolateMultiplicator()
+            {
+              let selectMultiplicator = document.getElementById("multiplicator");
+              for(let i=0;i<numberOfMultiplicator.length;i++)
+                {
+                    let opt = document.createElement('option');
+                    opt.value = numberOfMultiplicator[i];
+                    opt.innerHTML = numberOfMultiplicator[i];
+                    selectMultiplicator.appendChild(opt);
+                }
+              selectMultiplicator.addEventListener("change",this.changeMultiplicator.bind(this,selectMultiplicator));
+            }
+
+            changeMultiplicator(select)
+            {
+              this.buyMultipleSameTime = parseInt(select.value);
+            }
+
+            setClickMoney()
+            {
+                this.ClickObject.addEventListener("click",this.increment.bind(this));
+            }
+
+            createAiutanti()
+            {
+              for (var key in infoAiutanti)
+               this.addHtml(key);
+            }
+
+            addHtml(keyToAdd)
+            {
+              let div = document.createElement("div");
+              let divName = document.createElement("div");
+              let divCost = document.createElement("div");
+              let divGuadagno = document.createElement("div");
+              let divNumber = document.createElement("div");
+
+              divName.innerHTML=keyToAdd;
+              divNumber.innerHTML = this.numberAiutanti[keyToAdd];
+              divCost.innerHTML = infoAiutanti[keyToAdd].costo;
+              divGuadagno.innerHTML = infoAiutanti[keyToAdd].guadagno;
+
+              div.classList.add("aiutante");
+              divName.classList.add("name");
+              divNumber.classList.add("number");
+              divCost.classList.add("Costo");
+              divGuadagno.classList.add( "Guadagno");
+
+              div.addEventListener("click",this.addAiutanti.bind(this,div));
+              div.setAttribute("nameAiutante",keyToAdd);
+
+              div.appendChild(divName);
+              div.appendChild(divCost);
+              div.appendChild(divGuadagno);
+              div.appendChild(divNumber);
+              document.getElementById("allAiutanti").appendChild(div);
+
+            }
+
+            addAiutanti(div)
+            {
+
+              let nome = div.getAttribute("nameAiutante");
+              if(infoAiutanti[nome].costo*this.buyMultipleSameTime<=this.ValueTotal)
+              {
+                this.ValueTotal-=infoAiutanti[nome].costo*this.buyMultipleSameTime;
+                this.numberAiutanti[nome]+=this.buyMultipleSameTime;
+                this.displayValueTotal();
+                div.getElementsByClassName("number")[0].innerHTML = this.numberAiutanti[nome];
+              }
+              this.calcoloLavoroDeiAiutanti();
+            }
+
+            increment()
+            {
+              this.ValueTotal+=1;
+              this.displayValueTotal()
+            }
+
+            displayValueTotal()
+            {
+              this.ClickObject.innerHTML = this.ValueTotal.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");;
+            }
+
+            getValueTotal()
+            {
+              console.log(this.ValueTotal)
+            }
+
+            calcoloLavoroDeiAiutanti()
+            {
+              this.AiutantiTotal=0;
+              for (var key in infoAiutanti)
+                this.AiutantiTotal+= this.numberAiutanti[key] * infoAiutanti[key].guadagno;
+            }
+
+            lavoroDeiAiutanti()
+            {
+              this.ValueTotal += this.AiutantiTotal;
+              this.displayValueTotal();
+            }
+          }
+
+
+          const thisGame = new game();
+
+
+    </script>
+  </body>
+</html>

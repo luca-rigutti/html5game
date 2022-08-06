@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="it" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <title></title>
+    <style media="screen">
+      #board
+      {
+        width:400px;
+        height:400px;
+        border:1px solid black;
+      }
+    </style>
+
+    <script type="text/javascript">
+      //https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Applying_styles_and_colors
+      var Board =  Array(10).fill().map(()=>Array(10).fill(0));
+      var food = {x:3,y:5}
+      var snake = {color:"red",occuped:[]}; //[[0,0],[0,3],[9,9]]
+      var canvas;
+      var pxOfSquare = 40;
+      var direction;//0:Est,1:Sud,2:Ovest,3:Nord
+      var point=0;
+
+      function getRandomInt(max) {
+  return Math.floor(Math.random() * max);
+}
+
+      function setupBoard()
+      {
+        Board =  Array(10).fill().map(()=>Array(10).fill(0));
+        for(var i=0;i<snake.occuped.length;i++)
+          Board[snake.occuped[i][0]][snake.occuped[i][1]] = 1;
+
+        Board[food.x][food.y]=4;
+      }
+
+        function PrintBoard()
+        {
+          var ctx = canvas.getContext('2d');
+
+          for(var i=0;i<10;i++)
+            for(var j=0;j<10;j++)
+              if(Board[i][j]==0)
+              {
+                ctx.fillStyle = 'black';
+                ctx.clearRect(i*pxOfSquare, j*pxOfSquare, pxOfSquare, pxOfSquare);
+              }
+              else
+                if(Board[i][j]==1)
+                {
+                  ctx.fillStyle = 'blue';
+                  ctx.fillRect(i*pxOfSquare, j*pxOfSquare, pxOfSquare, pxOfSquare);
+                }
+                else
+                  {
+                    ctx.fillStyle = 'red';
+                    ctx.fillRect(i*pxOfSquare, j*pxOfSquare, pxOfSquare, pxOfSquare);
+                  }
+
+        }
+
+        function isOccuped(x,y)
+        {
+          var occuped=false;
+          for(var i=0;i<snake.occuped.length;i++)
+            if(snake.occuped[i][0]==x && snake.occuped[i][1]==y)
+              occuped=true;
+
+          return occuped;
+        }
+
+        function changeDirection(dir)
+        {
+          if((dir-direction)%2!=0)
+            direction=dir;
+        }
+
+        function setupRandomFood()
+        {
+          do {
+            //TODO: Dangerous if all is occuped this is a long loop
+            food.x=getRandomInt(10);
+            food.y=getRandomInt(10);
+          } while (isOccuped(food.x,food.y));
+        }
+
+        function Start()//TODO: Change name with init
+        {
+          canvas = document.getElementById('board');
+          setupRandomFood();
+          snake.occuped.push([getRandomInt(10),getRandomInt(10)]);
+          direction=0;
+          setupBoard();
+          PrintBoard();
+
+        }
+        function Move()
+        {
+          var newPosition = {...snake.occuped[snake.occuped.length-1]};
+          switch (direction) {
+            case 0:
+              newPosition[0]++;
+              newPosition[0] %=10;
+              break;
+            case 1:
+              newPosition[1]++;
+              newPosition[1] %=10;
+              break;
+            case 2:
+              newPosition[0]--;
+              if(newPosition[0]<0)
+                newPosition[0]=9;
+              break;
+            case 3:
+              newPosition[1]--;
+              if(newPosition[1]<0)
+                newPosition[1]=9;
+              break;
+
+            default:
+
+          }
+
+
+          if(Death(newPosition))
+            {
+              console.log("Death");
+              Start2();
+            }
+          else {
+            snake.occuped.push(newPosition);
+          }
+
+          if(food.x==newPosition[0] && food.y==newPosition[1])
+          {
+            //Eat
+            setupRandomFood();
+            point++;
+            document.getElementById("point").innerHTML=point;
+          }
+          else
+            snake.occuped.shift();
+
+          setupBoard();
+          PrintBoard();
+        }
+
+        var intervallCall=null;
+
+        function Start2() //TODO: Change name with Start after the other method Start changed with init
+        {
+          if(intervallCall==null)
+          {
+            intervallCall=setInterval(Move,200);
+            point=0;
+          }
+
+          else
+          {
+            clearInterval(intervallCall);
+            intervallCall=null;
+          }
+        }
+
+          function Death(newPosition)//TODO: Change Name with "AutoCollision" or find a better name
+          {
+            var EatSelf=false;
+            if(isOccuped(newPosition[0],newPosition[1]))
+              EatSelf=true;
+
+            return EatSelf;
+          }
+
+          document.onkeypress = function (e) {
+              e = e || window.event;
+              // use e.keyCode
+              switch (e.key) {
+                case "a": //A
+                  changeDirection(2);
+                  break;
+                case "w": //w
+                changeDirection(3);
+                  break;
+                case "s": //s
+                changeDirection(1);
+                  break;
+                case "d": //d
+                changeDirection(0);
+                  break;
+                case "n": //n
+                  Start2();
+                  break;
+
+              }
+          };
+
+    </script>
+  </head>
+  <body>
+    <canvas id="board" height="400" width="400"></canvas>
+    <div class="Button">
+      <!--<input type="button" onclick="Move()" value="Move">-->
+      <input type="button" onclick="Start2()" value="Start">
+    </br>
+      <input type="button" onclick="changeDirection(3)" value="Up">
+      <input type="button" onclick="changeDirection(1)" value="Down">
+      <input type="button" onclick="changeDirection(2)" value="Left">
+      <input type="button" onclick="changeDirection(0)" value="Right">
+    </div>
+    <div id="point"><div>
+    <script type="text/javascript">
+      Start();
+    </script>
+  </body>
+</html>
