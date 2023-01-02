@@ -1,0 +1,11 @@
+version: "3.3"
+services:
+  jest-test-2048:
+    build:
+      dockerfile: docker/dockerfile
+      context: ../
+    container_name: jest-test-2048 
+    tty: true
+    volumes:
+        - "../:/app"
+        - "/app/node_modules"
