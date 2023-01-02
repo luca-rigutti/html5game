@@ -42,3 +42,23 @@ test('left matrix', () => {
   expect(game2048.left(matrixSetup)).toEqual(matrixResult);
 });
 
+test('right matrix', () => {
+    const matrixSetup =
+        [
+            [2,4,0,2],
+            [2,2,2,0],
+            [0,0,2,4],
+            [2,2,2,2]
+        ];
+    
+    const matrixResult =
+    [
+        [0,2,4,2],
+        [0,0,2,4],
+        [0,0,2,4],
+        [0,0,4,4]
+    ];
+
+
+  expect(game2048.right(matrixSetup)).toEqual(matrixResult);
+});
