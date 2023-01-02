@@ -5,31 +5,39 @@ const game2048 = {
         for (let row = 0; row < matrix.length; row++) 
             for (let col = 0; col < matrix[row].length - 1; col++ )
                 {
-                    let colPosition = col + 1;
-                    let found = false;
-                    for (; colPosition < matrix[row].length && !found; colPosition++)
-                        if(matrix[row][colPosition]!=0)
-                            found = colPosition;
-
-                    colPosition = found;
-                    
-                    if (colPosition>=matrix[row].length || !found)
-                        continue;
-
-                    wasEmpty = matrix[row][col]==0;
-
-                    if(matrix[row][col]==0 || matrix[row][col]==matrix[row][colPosition] ){
-                        matrix[row][col] += matrix[row][colPosition];
-                        matrix[row][colPosition] = 0;
-                        changed = true;
-                    }
-
-                    if(wasEmpty)
-                        col -= 1;
-
+                    [matrix,changed,col] = this.checkAndPerformGame(matrix,row,col,false);
                 }
 
         return matrix;
+    },
+
+    checkAndPerformGame(matrix,row_index,col_index,is_row)
+    {
+        let colPosition = col_index + 1;
+        let found = false;
+        for (; colPosition < matrix[row_index].length && !found; colPosition++)
+            if(matrix[row_index][colPosition]!=0)
+                found = colPosition;
+
+        colPosition = found;
+        
+        if (colPosition>=matrix[row_index].length || !found)
+            return [matrix,false,col_index];
+
+        
+
+        wasEmpty = matrix[row_index][col_index]==0;
+
+        if(matrix[row_index][col_index]==0 || matrix[row_index][col_index]==matrix[row_index][colPosition] ){
+            matrix[row_index][col_index] += matrix[row_index][colPosition];
+            matrix[row_index][colPosition] = 0;
+            changed = true;
+        }
+
+        if(wasEmpty)
+            col_index -= 1;
+
+        return [matrix,changed,col_index]
     }
 
 }
